@@ -1,0 +1,16 @@
+1. SELECT * FROM item WHERE id=100
+
+2. INSERT INTO item (id, name, description, image_url, cost) VALUES (
+102,
+"Office Chair", 
+"This office chair will not take care of your back! And also it's as expensive as a desk! The chair market is ridiculous and so is this deal, buy now!",
+"https://images.thdstatic.com/productImages/0bac6de5-2d9a-4e41-ac31-7b5e27d47496/svn/white-granite-lifetime-folding-chairs-22804-64_600.jpg",
+783)
+
+3. DELETE FROM review WHERE id = 3
+
+4. UPDATE review SET name = "john" WHERE id = 3
+
+5. SELECT * FROM item i, reviews r
+WHERE i.id = r.item_id;
+ 
