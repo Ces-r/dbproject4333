@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Verification - <%= check.username %></title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <style>
+        .document-preview {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        .document-preview img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="/admin/verifications">Verifications</a></li>
+            <li class="breadcrumb-item active"><%= check.username %></li>
+        </ol>
+    </nav>
+
+    <h1>Review Verification</h1>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Provider Information</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Username:</dt>
+                        <dd class="col-sm-9"><%= check.username %></dd>
+                        
+                        <dt class="col-sm-3">Role:</dt>
+                        <dd class="col-sm-9"><%= check.role === 'P' ? 'Provider' : check.role %></dd>
+                        
+                        <dt class="col-sm-3">Description:</dt>
+                        <dd class="col-sm-9"><%= check.description || 'No description provided' %></dd>
+                        
+                        <dt class="col-sm-3">Submitted:</dt>
+                        <dd class="col-sm-9"><%= new Date(check.submitted_at).toLocaleString() %></dd>
+                        
+                        <dt class="col-sm-3">Status:</dt>
+                        <dd class="col-sm-9">
+                            <span class="badge badge-<%= check.status === 'approved' ? 'success' : check.status === 'rejected' ? 'danger' : 'warning' %>">
+                                <%= check.status.toUpperCase() %>
+                            </span>
+                        </dd>
+                        
+                        <% if (check.reviewed_at) { %>
+                            <dt class="col-sm-3">Reviewed:</dt>
+                            <dd class="col-sm-9"><%= new Date(check.reviewed_at).toLocaleString() %></dd>
+                        <% } %>
+                        
+                        <% if (check.notes) { %>
+                            <dt class="col-sm-3">Notes:</dt>
+                            <dd class="col-sm-9"><%= check.notes %></dd>
+                        <% } %>
+                    </dl>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5>Uploaded Documents (<%= documents.length %>)</h5>
+                </div>
+                <div class="card-body">
+                    <% if (documents.length === 0) { %>
+                        <p class="text-muted">No documents uploaded</p>
+                    <% } else { %>
+                        <% documents.forEach(function(doc) { %>
+                            <div class="document-preview">
+                                <h6><%= doc.document_type.toUpperCase() %></h6>
+                                <p><small class="text-muted">Uploaded: <%= new Date(doc.uploaded_at).toLocaleString() %></small></p>
+                                <p><strong>File:</strong> <%= doc.file_path %></p>
+                                <% if (doc.file_path.match(/\.(jpg|jpeg|png|gif)$/i)) { %>
+                                    <img src="/uploads/verification/<%= doc.file_path %>" alt="<%= doc.document_type %>">
+                                <% } else { %>
+                                    <p>
+                                        <a href="/uploads/verification/<%= doc.file_path %>" target="_blank" class="btn btn-sm btn-primary">
+                                            View PDF
+                                        </a>
+                                    </p>
+                                <% } %>
+                            </div>
+                        <% }); %>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <% if (check.status === 'pending') { %>
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5>Make Decision</h5>
+                    </div>
+                    <div class="card-body">
+                        <form action="/admin/verifications/<%= check.id %>/decide" method="POST">
+                            <div class="form-group">
+                                <label>Decision:</label>
+                                <select name="decision" class="form-control" required>
+                                    <option value="">Select...</option>
+                                    <option value="approved">✅ Approve</option>
+                                    <option value="rejected">❌ Reject</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Notes (required for rejection):</label>
+                                <textarea name="notes" class="form-control" rows="4" placeholder="Add notes about your decision..."></textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary btn-block">Submit Decision</button>
+                        </form>
+                    </div>
+                </div>
+            <% } else { %>
+                <div class="alert alert-<%= check.status === 'approved' ? 'success' : 'danger' %>">
+                    <h5>Decision Made</h5>
+                    <p>This verification was <%= check.status %></p>
+                    <% if (check.notes) { %>
+                        <p><strong>Notes:</strong> <%= check.notes %></p>
+                    <% } %>
+                </div>
+            <% } %>
+            
+            <p class="mt-3">
+                <a href="/admin/verifications" class="btn btn-secondary btn-block">Back to List</a>
+            </p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Verifications</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-4">
+    <h1>Background Verification Management</h1>
+    <p class="lead">Review and approve provider verifications</p>
+    
+    <ul class="nav nav-tabs mb-4" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" data-toggle="tab" href="#pending">
+                Pending (<%= pending.length %>)
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#approved">
+                Approved (<%= approved.length %>)
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#rejected">
+                Rejected (<%= rejected.length %>)
+            </a>
+        </li>
+    </ul>
+    
+    <div class="tab-content">
+        <!-- Pending Tab -->
+        <div id="pending" class="tab-pane fade show active">
+            <h3>Pending Verifications</h3>
+            <% if (pending.length === 0) { %>
+                <div class="alert alert-info">No pending verifications</div>
+            <% } else { %>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Provider</th>
+                            <th>Description</th>
+                            <th>Submitted</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% pending.forEach(function(check) { %>
+                            <tr>
+                                <td><strong><%= check.username %></strong></td>
+                                <td><%= check.description || 'No description' %></td>
+                                <td><%= new Date(check.submitted_at).toLocaleDateString() %></td>
+                                <td>
+                                    <a href="/admin/verifications/<%= check.id %>" class="btn btn-sm btn-primary">
+                                        Review
+                                    </a>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            <% } %>
+        </div>
+        
+        <!-- Approved Tab -->
+        <div id="approved" class="tab-pane fade">
+            <h3>Approved Verifications</h3>
+            <% if (approved.length === 0) { %>
+                <div class="alert alert-info">No approved verifications</div>
+            <% } else { %>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Provider</th>
+                            <th>Approved</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% approved.forEach(function(check) { %>
+                            <tr>
+                                <td><strong><%= check.username %></strong></td>
+                                <td><%= new Date(check.reviewed_at).toLocaleDateString() %></td>
+                                <td>
+                                    <a href="/admin/verifications/<%= check.id %>" class="btn btn-sm btn-secondary">
+                                        View
+                                    </a>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            <% } %>
+        </div>
+        
+        <!-- Rejected Tab -->
+        <div id="rejected" class="tab-pane fade">
+            <h3>Rejected Verifications</h3>
+            <% if (rejected.length === 0) { %>
+                <div class="alert alert-info">No rejected verifications</div>
+            <% } else { %>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Provider</th>
+                            <th>Rejected</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% rejected.forEach(function(check) { %>
+                            <tr>
+                                <td><strong><%= check.username %></strong></td>
+                                <td><%= new Date(check.reviewed_at).toLocaleDateString() %></td>
+                                <td>
+                                    <a href="/admin/verifications/<%= check.id %>" class="btn btn-sm btn-secondary">
+                                        View
+                                    </a>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            <% } %>
+        </div>
+    </div>
+    
+    <p class="mt-4">
+        <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a>
+    </p>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+</body>
+</html>

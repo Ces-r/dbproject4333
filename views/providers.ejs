@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Providers</title>
+</head>
+<body>
+    <h1>Available Providers</h1>
+    <ul>
+        <% provider.forEach(function(i) { %>
+            <li>
+                <h2>
+                    <%= i.username %>
+                    <% if (i.is_verified) { %>
+                        <span class="badge badge-success">✓ Verified</span>
+                    <% } %>
+                </h2>
+                <p>
+                    <% if (!i.description) { %>
+                        No description available.
+                    <% } else { %>
+                        <%= i.description %>
+                    <% } %>
+                </p>
+                <p>
+                    Average Rating: 
+                    <% if (i.avgRating) { %>
+                        <strong><%= i.avgRating %></strong> 
+                        (<%= i.totalReviews %> <%= i.totalReviews === 1 ? 'review' : 'reviews' %>)
+                    <% } else { %>
+                        <span class="text-muted">No reviews yet</span>
+                    <% } %>
+                </p>
+
+                <p>
+                    <a href="/providers/<%= i.id || i.user_id %>" class="btn btn-primary">View Details & Reviews</a>
+                    <% if (typeof user !== 'undefined' && user.role === 'C') { %>
+                        <a href="/providers/<%= i.id || i.user_id %>/book" class="btn btn-success ml-2">📅 Book Now</a>
+                    <% } %>
+                </p>
+            </li>
+        <% }); %>
+    </ul>
+</body>
+</html>

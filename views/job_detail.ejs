@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job #<%= job.id %> - Details</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/main.css">
+    <style>
+        .status-box {
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .status-pending { background-color: #fff3cd; border-left: 5px solid #ffc107; }
+        .status-accepted { background-color: #d1ecf1; border-left: 5px solid #17a2b8; }
+        .status-in_progress { background-color: #cce5ff; border-left: 5px solid #007bff; }
+        .status-completed { background-color: #d4edda; border-left: 5px solid #28a745; }
+        .status-declined { background-color: #f8d7da; border-left: 5px solid #dc3545; }
+        .status-cancelled { background-color: #e2e3e5; border-left: 5px solid #6c757d; }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="/jobs">My Jobs</a></li>
+                <li class="breadcrumb-item active">Job #<%= job.id %></li>
+            </ol>
+        </nav>
+
+        <% if (message) { %>
+            <div class="alert alert-success alert-dismissible fade show">
+                <%= message %>
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        <% } %>
+
+        <!-- Status Box -->
+        <div class="status-box status-<%= job.status %>">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h3 class="mb-0">
+                        Job #<%= job.id %>
+                        <% if (job.status === 'pending') { %>
+                            <span class="badge badge-warning">⏳ Pending</span>
+                        <% } else if (job.status === 'accepted') { %>
+                            <span class="badge badge-info">✓ Accepted</span>
+                        <% } else if (job.status === 'in_progress') { %>
+                            <span class="badge badge-primary">🔨 In Progress</span>
+                        <% } else if (job.status === 'completed') { %>
+                            <span class="badge badge-success">✅ Completed</span>
+                        <% } else if (job.status === 'declined') { %>
+                            <span class="badge badge-danger">✗ Declined</span>
+                        <% } else if (job.status === 'cancelled') { %>
+                            <span class="badge badge-secondary">Cancelled</span>
+                        <% } %>
+                    </h3>
+                    <p class="mb-0 mt-2">
+                        <% if (job.status === 'pending') { %>
+                            Waiting for provider response...
+                        <% } else if (job.status === 'accepted') { %>
+                            Job accepted! Scheduled for <%= new Date(job.scheduled_date).toLocaleDateString() %>
+                        <% } else if (job.status === 'in_progress') { %>
+                            Job is currently being worked on
+                        <% } else if (job.status === 'completed') { %>
+                            Job completed on <%= new Date(job.completed_at).toLocaleDateString() %>
+                        <% } else if (job.status === 'declined') { %>
+                            Provider declined this job request
+                        <% } else if (job.status === 'cancelled') { %>
+                            This job has been cancelled
+                        <% } %>
+                    </p>
+                </div>
+                <div class="col-md-4 text-right">
+                    <% if (user.role === 'P' && job.status === 'pending') { %>
+                        <form action="/jobs/<%= job.id %>/accept" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-success btn-lg">Accept Job</button>
+                        </form>
+                        <form action="/jobs/<%= job.id %>/decline" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-danger">Decline</button>
+                        </form>
+                    <% } else if (user.role === 'P' && job.status === 'accepted') { %>
+                        <form action="/jobs/<%= job.id %>/start" method="POST">
+                            <button type="submit" class="btn btn-primary btn-lg">Start Job</button>
+                        </form>
+                    <% } else if (user.role === 'P' && job.status === 'in_progress') { %>
+                        <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#completeModal">
+                            Mark Complete
+                        </button>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <!-- Job Details Card -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <strong>Job Details</strong>
+                    </div>
+                    <div class="card-body">
+                        <% if (job.service_category) { %>
+                            <p><strong>Category:</strong> <span class="badge badge-secondary"><%= job.service_category %></span></p>
+                        <% } %>
+                        
+                        <p><strong>Service Description:</strong></p>
+                        <p class="bg-light p-3 rounded"><%= job.service_description %></p>
+                        
+                        <hr>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>📅 Scheduled Date:</strong><br>
+                                <%= new Date(job.scheduled_date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+                            </div>
+                            <% if (job.scheduled_time) { %>
+                                <div class="col-md-6">
+                                    <p><strong>🕐 Scheduled Time:</strong><br>
+                                    <%= job.scheduled_time %></p>
+                                </div>
+                            <% } %>
+                        </div>
+                        
+                        <p><strong>📍 Service Address:</strong><br>
+                        <%= job.address %></p>
+                        
+                        <% if (job.price) { %>
+                            <p><strong>💰 Budget:</strong> $<%= parseFloat(job.price).toFixed(2) %></p>
+                        <% } %>
+                        
+                        <% if (job.customer_notes) { %>
+                            <hr>
+                            <p><strong>Customer Notes:</strong></p>
+                            <p class="bg-light p-3 rounded"><%= job.customer_notes %></p>
+                        <% } %>
+                        
+                        <% if (job.provider_notes) { %>
+                            <hr>
+                            <p><strong>Provider Notes:</strong></p>
+                            <p class="bg-light p-3 rounded"><%= job.provider_notes %></p>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Timeline Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <strong>Job Timeline</strong>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                ✓ <strong>Created:</strong> <%= new Date(job.created_at).toLocaleString() %>
+                            </li>
+                            <% if (job.accepted_at) { %>
+                                <li class="mb-2">
+                                    ✓ <strong>Accepted:</strong> <%= new Date(job.accepted_at).toLocaleString() %>
+                                </li>
+                            <% } %>
+                            <% if (job.completed_at) { %>
+                                <li class="mb-2">
+                                    ✓ <strong>Completed:</strong> <%= new Date(job.completed_at).toLocaleString() %>
+                                </li>
+                            <% } %>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <!-- Provider Card -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <strong>Provider</strong>
+                    </div>
+                    <div class="card-body">
+                        <h5>
+                            <%= job.provider_name %>
+                            <% if (job.provider_verified) { %>
+                                <span class="badge badge-success">✓</span>
+                            <% } %>
+                        </h5>
+                        <% if (job.provider_description) { %>
+                            <p class="text-muted"><%= job.provider_description %></p>
+                        <% } %>
+                        <a href="/providers/<%= job.provider_id %>" class="btn btn-sm btn-outline-primary btn-block">View Profile</a>
+                    </div>
+                </div>
+
+                <!-- Customer Card -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <strong>Customer</strong>
+                    </div>
+                    <div class="card-body">
+                        <h5><%= job.customer_name %></h5>
+                        <p class="text-muted mb-0">Booking ID: #<%= job.id %></p>
+                    </div>
+                </div>
+
+                <!-- Actions Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <strong>Actions</strong>
+                    </div>
+                    <div class="card-body">
+                        <% if (job.status === 'completed' && user.role === 'C') { %>
+                            <a href="/providers/<%= job.provider_id %>" class="btn btn-warning btn-block">
+                                ⭐ Leave Review
+                            </a>
+                        <% } %>
+                        
+                        <% if (job.status !== 'completed' && job.status !== 'cancelled' && job.status !== 'declined') { %>
+                            <form action="/jobs/<%= job.id %>/cancel" method="POST" onsubmit="return confirm('Are you sure you want to cancel this job?');">
+                                <button type="submit" class="btn btn-outline-danger btn-block">Cancel Job</button>
+                            </form>
+                        <% } %>
+                        
+                        <a href="/jobs" class="btn btn-secondary btn-block mt-2">Back to Jobs</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Complete Job Modal -->
+    <div class="modal fade" id="completeModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form action="/jobs/<%= job.id %>/complete" method="POST">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Mark Job as Complete</h5>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="provider_notes">Completion Notes (optional)</label>
+                            <textarea class="form-control" id="provider_notes" name="provider_notes" rows="4" 
+                                placeholder="Describe what was completed, any issues encountered, or recommendations..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success">Mark as Complete</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+</body>
+</html>

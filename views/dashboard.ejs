@@ -4,14 +4,86 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/main.css">
 </head>
 <body>
-    <h1>Dashboard</h1>
-    <p>Welcome, <%= user.username %>!</p>
-    <% if (user.role === 'P') { %>
-        <p>You are logged in as a Provider.</p>
-    <% } else { %>
-        <p>You are logged in as a Customer.</p>
-    <% } %>
+    <div class="container mt-5">
+        <h1>Dashboard</h1>
+        <p>Welcome, <%= user.username %>!</p>
+        
+        <% if (user.role === 'A') { %>
+            <div class="alert alert-info">
+                <strong>Admin Panel</strong>
+            </div>
+            <div class="mb-4">
+                <a href="/admin/verifications" class="btn btn-warning">Manage Verifications</a>
+                <a href="/providers" class="btn btn-primary ml-2">View All Providers</a>
+            </div>
+        <% } %>
+        
+        <% if (user.role === 'P') { %>
+            <p>You are logged in as a Provider.</p>
+            
+            <!-- Verification Status -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <strong>Verification Status</strong>
+                </div>
+                <div class="card-body">
+                    <% if (user.is_verified) { %>
+                        <div class="alert alert-success">
+                            ✓ Verified Provider <span class="badge badge-success">VERIFIED</span>
+                            <br><small>Verified on: <%= new Date(user.verified_at).toLocaleDateString() %></small>
+                        </div>
+                    <% } else { %>
+                        <div class="alert alert-warning">
+                            <strong>Not Verified</strong> - Get verified to build trust with customers!
+                            <br><a href="/verification/submit" class="btn btn-primary mt-2">Submit Verification Documents</a>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+            
+            <!-- Description -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <strong>Your Profile Description</strong>
+                </div>
+                <div class="card-body">
+                    <% if (!user.description) { %>
+                        <p>No description available. Make one so your clients know why they should choose you.</p>
+                        <form action="/update-description" method="POST">
+                            <input type="text" class="form-control mb-2" placeholder="Enter description here" name="description" required></input>
+                            <button type="submit" class="btn btn-primary">Make a description</button>
+                        </form>
+                    <% } else { %>
+                        <p><%= user.description %></p>
+                        <hr>
+                        <p>Would you like to update your description?</p>
+                        <form action="/update-description" method="POST">
+                            <input type="text" class="form-control mb-2" placeholder="Enter new description here" name="description" required></input>
+                            <button type="submit" class="btn btn-primary">Update Description</button>
+                        </form>
+                    <% } %>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <a href="/jobs" class="btn btn-info btn-lg mr-2">📋 My Jobs</a>
+                <a href="/providers" class="btn btn-secondary">View All Providers</a>
+            </div>
+
+        <% } else if (user.role === 'C') { %>
+            <p>You are logged in as a Customer.</p>
+            <div class="mb-3">
+                <a href="/providers" class="btn btn-primary btn-lg mr-2">🔍 Browse Available Providers</a>
+                <a href="/jobs" class="btn btn-info btn-lg">📋 My Bookings</a>
+            </div>
+        <% } %>
+        
+        <hr class="mt-4">
+        <a href="/logout" class="btn btn-danger">Logout</a>
+    </div>
 </body>
 </html>

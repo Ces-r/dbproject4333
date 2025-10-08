@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Verification</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+            <li class="breadcrumb-item active">Verification</li>
+        </ol>
+    </nav>
+
+    <h1>Background Verification</h1>
+    <p class="lead">Get verified to build trust with clients</p>
+    
+    <% if (existingCheck) { %>
+        <div class="alert alert-<%= existingCheck.status === 'approved' ? 'success' : existingCheck.status === 'rejected' ? 'danger' : 'warning' %>">
+            <h5>Current Status: <strong><%= existingCheck.status.toUpperCase() %></strong></h5>
+            <% if (existingCheck.status === 'pending') { %>
+                <p>⏳ Your verification is under review. We'll notify you once it's been reviewed.</p>
+                <small>Submitted: <%= new Date(existingCheck.submitted_at).toLocaleDateString() %></small>
+            <% } else if (existingCheck.status === 'approved') { %>
+                <p>✅ Congratulations! You are verified.</p>
+                <small>Verified: <%= new Date(existingCheck.reviewed_at).toLocaleDateString() %></small>
+            <% } else if (existingCheck.status === 'rejected') { %>
+                <p>❌ Your verification was not approved.</p>
+                <% if (existingCheck.notes) { %>
+                    <p><strong>Reason:</strong> <%= existingCheck.notes %></p>
+                <% } %>
+                <p>You can submit new documents below.</p>
+            <% } %>
+        </div>
+    <% } %>
+    
+    <% if (documents && documents.length > 0) { %>
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Your Uploaded Documents</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Document Type</th>
+                            <th>Uploaded</th>
+                            <th>File</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% documents.forEach(function(doc) { %>
+                            <tr>
+                                <td><%= doc.document_type %></td>
+                                <td><%= new Date(doc.uploaded_at).toLocaleDateString() %></td>
+                                <td><%= doc.file_path %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    <% } %>
+    
+    <% if (!existingCheck || existingCheck.status === 'rejected') { %>
+        <div class="card">
+            <div class="card-body">
+                <h5>Upload Verification Documents</h5>
+                <p>Please upload the following to verify your identity and qualifications:</p>
+                <ul>
+                    <li><strong>Government-issued ID</strong> (Driver's License, Passport) - Required</li>
+                    <li><strong>Professional certifications</strong> (if applicable)</li>
+                    <li><strong>Insurance certificate</strong> (if applicable)</li>
+                    <li><strong>Business license</strong> (if applicable)</li>
+                </ul>
+                
+                <form action="/verification/submit" method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label><strong>Document 1: Government ID</strong> <span class="text-danger">*</span></label>
+                        <input type="file" name="documents" class="form-control" required accept="image/*,.pdf">
+                        <input type="hidden" name="document_types" value="id">
+                        <small class="form-text text-muted">Accepted: JPG, PNG, PDF (Max 5MB)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><strong>Document 2: Certification</strong> (optional)</label>
+                        <input type="file" name="documents" class="form-control" accept="image/*,.pdf">
+                        <input type="hidden" name="document_types" value="certification">
+                        <small class="form-text text-muted">Professional licenses, certifications, etc.</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><strong>Document 3: Insurance</strong> (optional)</label>
+                        <input type="file" name="documents" class="form-control" accept="image/*,.pdf">
+                        <input type="hidden" name="document_types" value="insurance">
+                        <small class="form-text text-muted">Liability insurance certificate</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><strong>Document 4: Business License</strong> (optional)</label>
+                        <input type="file" name="documents" class="form-control" accept="image/*,.pdf">
+                        <input type="hidden" name="document_types" value="license">
+                        <small class="form-text text-muted">Business registration or license</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><strong>Document 5: Other</strong> (optional)</label>
+                        <input type="file" name="documents" class="form-control" accept="image/*,.pdf">
+                        <input type="hidden" name="document_types" value="other">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-lg">Submit for Verification</button>
+                    <a href="/dashboard" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    <% } %>
+</div>
+</body>
+</html>
